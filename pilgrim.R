@@ -39,4 +39,13 @@ fit <- lm(train[2] ~ ., data=train)
 head(train)
 fit <- lm(formula = `X9Profit` ~ `X9Online`,`X9Inc`, data=train)
 summary(fit)
-   
+##ploting a matrix of all variables
+newData = dataPilg[,c(1:8)]
+summary(newData)   
+plot(newData, pch=16, col="blue", main="Matrix")
+set.seed(1)
+mod1 = lm(X9Profit~X9Inc + X9Age, data=newData)
+summary(mod1)
+newdatacor = cor(newData[1:8])
+corrplot(newdatacor, method = "number")
+

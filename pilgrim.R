@@ -48,4 +48,26 @@ mod1 = lm(X9Profit~X9Inc + X9Age, data=newData)
 summary(mod1)
 newdatacor = cor(newData[1:8])
 corrplot(newdatacor, method = "number")
+#dropping the N/A values
+library(data.table)
+DT <- as.data.table(train)
+DT[,which(unlist(lapply(DT, function(x)!all(is.na(x))))),with=F]
+corrplot(data, method="number")
+View
+##Second approach
+train <- train[,colSums(is.na(train))<nrow(train)]
+View(train)
 
+na.omit(train)
+train <- as.data.frame(train)
+
+frameTrain <- as.data.frame(train)
+#removing NA's by reading in differently 
+importData <- read.csv("C:/Users/Uros Randelovic/Documents/R workspace/BUS 111/data.csv",
+                       stringsAsFactors=F, na.strings=c(NA,"NA"," NA"))
+#viewing data 
+str(importData)
+data <- importData[complete.cases(importData[c("X9Profit","X0Profit","X0Online","X0Billpay","X9Inc","X9Online","X9Age","X9Tenure")]),]
+str(data)
+#plotting data
+corrplot(cor(data), method="ellipse",shade.col=NA, tl.col="black", tl.srt=45)

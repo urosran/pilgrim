@@ -1,0 +1,104 @@
+---
+title: "Pilgrim Data Exploration"
+author: "Roopa, Daniel, Anabelle, URos"
+date: "September 25, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#loading data
+dataPilg <- read.csv("C:/Users/Uros Randelovic/Documents/R workspace/BUS 111/data.csv")
+#explore the data 
+head(dataPilg, n=10)
+names(dataPilg)
+dataPilg
+#visualy explore the data in table format
+data(dataPilg)
+View(dataPilg)
+
+###split the data###
+smp_size <- floor(0.75 * nrow(dataPilg))
+## set the seed to make your partition reproductible
+set.seed(123)
+train_ind <- sample(seq_len(nrow(dataPilg)), size = smp_size)
+#separate specific sets of data
+train <- dataPilg[train_ind, ]
+test <- dataPilg[-train_ind, ]
+#plot the income and profitability to explore
+plot(train[,5], train[,2])
+#coorelation plot 
+library(corrplot)
+M<- cor(train)
+corrplot(M,method = "ellipse")
+#exploring the possibility to regress the discrete variables
+train = within(train, {
+  income1 = ifelse(X9Inc == 1, 1, 0)
+  income2 = ifelse(X9Inc == 0, 1, 0)
+})
+View(train)
+#tried to regress multiple variables to see the
+#intercepts and relevance
+fit <- lm(train[2] ~ ., data=train)
+head(train)
+fit <- lm(formula = `X9Profit` ~ `X9Online`,`X9Inc`, data=train)
+summary(fit)
+##ploting a matrix of all variables
+newData = dataPilg[,c(1:8)]
+summary(newData)   
+plot(newData, pch=16, col="blue", main="Matrix")
+set.seed(1)
+mod1 = lm(X9Profit~X9Inc + X9Age, data=newData)
+summary(mod1)
+newdatacor = cor(newData[1:8])
+corrplot(newdatacor, method = "number")
+#dropping the N/A values
+library(data.table)
+DT <- as.data.table(train)
+DT[,which(unlist(lapply(DT, function(x)!all(is.na(x))))),with=F]
+corrplot(data, method="number")
+View
+##Second approach
+train <- train[,colSums(is.na(train))<nrow(train)]
+View(train)
+
+na.omit(train)
+train <- as.data.frame(train)
+
+frameTrain <- as.data.frame(train)
+#removing NA's by reading in differently 
+importData <- read.csv("C:/Users/Uros Randelovic/Documents/R workspace/BUS 111/data.csv",
+                       stringsAsFactors=F, na.strings=c(NA,"NA"," NA"))
+#viewing data 
+str(importData)
+data <- importData[complete.cases(importData[c("X9Profit","X0Profit","X0Online","X0Billpay","X9Inc","X9Online","X9Age","X9Tenure")]),]
+str(data)
+#plotting data
+corrplot(cor(data), method="number",shade.col=NA, tl.col="black", tl.srt=45)
+
+```
+From the plot we can see that Bill pay correlates with Online variable. Interestingly the correlation between online and profitability is almost non existent. Correlation with age is only .14 while tenure and income are around the same number. 
+
+Online and age have a negative .21 correlation which signifies that younger customers are more likely to be online and thus have a higher bill collection. 
+
+Below we develop the model to predict profitability and try to include just age and
+either the people are online or not: 
+
+```{r}
+
+fit <- lm(X9Profit ~ X9Age + X9Online, data=data)
+summary(fit) # show results
+```
+Since the R squared metric indicates that the model does not really do a great job in explaining the data we try to include more variables to try to explain the data better:
+
+```{r}
+fit <- lm(X9Profit ~ X9Age + X9Online + X9Billpay + X9Tenure, data=data)
+summary(fit)
+```
+We get slightly better measure of R squared but non the less still a very low number compared to what it should be. 
+```{r}
+str(data)
+```
